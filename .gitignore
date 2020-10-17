@@ -41,8 +41,25 @@ bld/
 *.o
 *.P
 
+
+
 # Visual Studio 2017 auto generated files
 Generated\ Files/
+*.bash_history
+*.config/
+*.gnupg/
+*.local/
+*.pki/
+*.sudo_as_admin_successful
+*.vboxclient-clipboard.pid
+*.vboxclient-display-svga-x11.pid
+*.vboxclient-draganddrop.pid
+*.vboxclient-hostversion.pid
+*.vboxclient-seamless.pid
+*.vscode/
+StateMachineEmbedded/
+notes.note
+
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
