@@ -2,10 +2,10 @@ BIN = lab1# namn på output-binären
 
 # Lista på C-ﬁler ingående i binären
 SOURCES = \
-		  main.c \
+		  main.cpp \
 		  serial.c
 
-PORT = /dev/ttyS3 # Arduinons serieport — kan vara ttyACM1, kolla dmesg!
+PORT = /dev/ttyACM0 # Arduinons serieport — kan vara ttyACM1, kolla dmesg!
 
 CC = avr-gcc
 LD=avr-ld
