@@ -34,13 +34,15 @@ const char serial_available()
 */
 {
     return (UCSR0A & (1 << RXC0));
-    Suspend and await equal state between 
-    registers to ensure empty transmit buffer 
-    */
-    while(!(UCSR0A & (1<<UDRE0)))
-    ;
+}
 
-    UDR0 = chr;
+void uart_putchar(unsigned char c)
+/*
+* Transfer one byte over UART.
+*/
+{
+    while(!serial_write_ready());
+    UDR0 = c;
 }
 
 void uart_putstr(const char *str)
