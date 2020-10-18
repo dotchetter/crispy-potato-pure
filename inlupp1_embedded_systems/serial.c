@@ -1,15 +1,19 @@
 #include <avr/io.h>
 #include "serial.h"
 
-
-void uart_init(unsigned int ubrr)
+void uart_init()
+/*
+ * Sets baudrate in UBRR HIGH and LOW registers.
+ * :param ubrr: calculated Uart Baud Register Rate (UBRR)
+*/
 {
-    // Left shift the UBRR0H Register by ubrr 8 positions
-    UBRR0H = (unsigned char)(ubrr >> 8);
-    UBRR0L = (unsigned char)ubrr;
+    // Set UBRR HIGH and LOW register values, considering provided UBRR value
+    UBRR0L = (uint8_t)(UBRR & 255);
+    UBRR0H = (uint8_t)(UBRR >> 8);
 
-    // Enable receiver and transmitter registers
-    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+    // enable the transmitter and receiver
+    UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
+}
 
     // Set the frame format, being 8N1
     UCSR0C = (1<<USBS0) | (3<<UCSZ00);
