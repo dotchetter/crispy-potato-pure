@@ -70,4 +70,22 @@ unsigned char uart_getchar()
     return UDR0;
 }
 
-//void uart_echo(void);
+void uart_getline(char* buf)
+{
+    char c;
+    static unsigned long bufcount = 0;
+
+    if (!serial_available())
+        return;
+
+    while (c != '\r') {
+        c = uart_getchar();
+        if (c >= 1)
+            buf[bufcount++] = c;
+
+        if (bufcount == (sizeof(buf) / sizeof(buf[0]) - 1))
+            break;
+    }
+    buf[bufcount+1] = '\0';
+    bufcount = 0;
+}
