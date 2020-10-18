@@ -15,8 +15,15 @@ void uart_init()
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
 }
 
-    // Set the frame format, being 8N1
-    UCSR0C = (1<<USBS0) | (3<<UCSZ00);
+const char serial_write_ready()
+/* 
+* If UDRE0 is one, the buffer is empty, 
+* and therefore  ready to be written. 
+* To isolate this, UDRE0 can be masked with UCSR0A. 
+* The buffer is empty and ready to be written to when the bit is 1.
+*/
+{
+    return (UCSR0A & (1 << UDRE0));
 }
 
 void uart_putchar(unsigned char chr)
