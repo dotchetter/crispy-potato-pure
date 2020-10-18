@@ -89,3 +89,11 @@ void uart_getline(char* buf)
     buf[bufcount+1] = '\0';
     bufcount = 0;
 }
+
+void uart_echo()
+{
+    char input[255];
+    memset(input, 0, sizeof(input) / sizeof(input[0]));
+    uart_getline(input);
+    uart_putstr(input);
+}
