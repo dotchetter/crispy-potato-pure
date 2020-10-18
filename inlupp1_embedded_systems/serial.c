@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <string.h>
 #include "serial.h"
 
 void uart_init()
