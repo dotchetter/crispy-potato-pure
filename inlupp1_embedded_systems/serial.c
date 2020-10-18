@@ -46,11 +46,14 @@ void uart_putchar(unsigned char c)
 }
 
 void uart_putstr(const char *str)
+/*
+* Iterate over the pointer until null terminator,
+* blocking wait until buffer is ready for write.
+*/
 {
-    while (*str)
-    {
-        uart_putchar(*str);
-        str++;
+    while (*str > 0) {
+        while (!serial_write_ready()); 
+        uart_putchar(*str++);
     }
 }
 
