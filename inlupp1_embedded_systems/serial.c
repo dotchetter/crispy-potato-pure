@@ -57,11 +57,16 @@ void uart_putstr(const char *str)
     }
 }
 
-char uart_getchar(void)
+unsigned char uart_getchar()
+/*
+* Returns byte available in UDR0 register
+* at time of call. If the bit is LOW for UDRE0,
+* -1 is returned to allow for non-blocking waiting.
+*/
 {
-    // Await data to be received
-    while (!(UCSR0A & (1<<RXC0)))
-    ;
+
+    if (!serial_available())
+        return -1;
     return UDR0;
 }
 
