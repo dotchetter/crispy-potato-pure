@@ -26,9 +26,14 @@ const char serial_write_ready()
     return (UCSR0A & (1 << UDRE0));
 }
 
-void uart_putchar(unsigned char chr)
+const char serial_available()
+/*
+* If the RXC0 bit is set to 1, there is data 
+* pending to be received over UART, in which 
+* case this method returns 1.
+*/
 {
-    /* 
+    return (UCSR0A & (1 << RXC0));
     Suspend and await equal state between 
     registers to ensure empty transmit buffer 
     */
