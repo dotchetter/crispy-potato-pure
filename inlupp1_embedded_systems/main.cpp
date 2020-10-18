@@ -1,16 +1,16 @@
 #include "serial.h"
 #include "StateMachine.h"
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
-#include <string.h>
+
 
 // State function pointer declarations
 void idle();
 void switchLed();
 
-
+// Globally accessible statemachine instance
 StateMachine<char> sm = StateMachine<char>(0, &idle);
-
 
 void setup()
 /*
@@ -22,18 +22,33 @@ void setup()
 
     BUTTON 1:   8  (PORTB BIT 0)
     BUTTON 2:   12 (PORTB BIT 4)
-
-
     DDRB MUST BE: 00001110 (0 TO LISTEN, 1 TO WRITE)
 */
 {
     // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
     DDRB = (7 << 1);
 
-    // 
+    // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
+    UCSR0B |= (1 << RXCIE0);
+
+    uart_init();
+
+    /*
+    * State map: 0 :: idle function, main state
+                 1 :: switchLed
+                 2 :: parseUart
+    */
     sm.addState(1, switchLed);
+
+    // Enable interrupt routines
+    sei();
 }
 
+// Configure interrupt routine for USART_RX vector, with defined action
+ISR (USART_RX_vect)
+{
+    uart_echo();
+}
 
 void idle()
 {
@@ -62,25 +77,14 @@ void switchLed()
    sm.release();
 }
 
-// int main ()
-// {
-//     setup();
-
-//     while(1)
-//     {
-//         sm.next()();
-//     }
-//     return 0;
-//}
-
 int main()
 {
-    uart_init();
     setup();
  
     while(1)
     {
         switchLed();
-        uart_echo();
+        _delay_ms(500);
+        //uart_echo();
     }
 }
