@@ -3,6 +3,9 @@
 #include <util/delay.h>
 #include "serial.h"
 #include "StateMachine.h"
+#include <avr/io.h>
+#include <util/delay.h>
+#include <string.h>
 
 // State function pointer declarations
 void idle();
