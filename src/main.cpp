@@ -1,5 +1,6 @@
 #include "serial.h"
 #include "StateMachine.h"
+#include "millis.c"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -40,6 +41,10 @@ void setup()
     */
     sm.addState(1, switchLed);
 
+    // Disable interrupt routines and enable millis
+    cli();
+    init_millis(F_CPU);
+
     // Enable interrupt routines
     sei();
 }
@@ -79,12 +84,17 @@ void switchLed()
 
 int main()
 {
+    unsigned long last_iter_ms;
     setup();
- 
+    
     while(1)
     {
-        switchLed();
-        _delay_ms(500);
+        if (millis() - last_iter_ms >= 250)
+        {
+            switchLed();
+            last_iter_ms = millis();
+        }
+        //_delay_ms(500);
         //uart_echo();
     }
 }
