@@ -42,7 +42,7 @@ void init()
                  1 :: switchLed
                  2 :: parseUart
     */
-    sm.addState(1, switchLed);
+    sm.addState(1, &switchLed);
 
     // Disable interrupt routines and enable millis
     cli();
