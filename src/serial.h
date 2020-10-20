@@ -6,7 +6,7 @@ extern "C" {
 
 
 #define F_CPU 16000000 // Atmega 328P 16Mhz
-#define BAUD 9600
+#define BAUD 38400
 #define UBRR ((F_CPU/16/BAUD) - 1)
 
 void uart_init();

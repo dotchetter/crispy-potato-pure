@@ -9,7 +9,7 @@ void uart_init()
 */
 {
     // Set UBRR HIGH and LOW register values, considering provided UBRR value
-    UBRR0L = (uint8_t)(UBRR & 255);
+    UBRR0L = (uint8_t)(UBRR & 0xFF);
     UBRR0H = (uint8_t)(UBRR >> 8);
 
     // enable the transmitter and receiver
