@@ -57,10 +57,28 @@ void init()
     sei();
 }
 
-// Configure interrupt routine for USART_RX vector, with defined action
-ISR (USART_RX_vect)
+const char parse_uart_command()
+/*
+* Read the incoming command over USART. Parses the command and
+  returns the int value for map place of given command in the 
+  lookup table for PROGMEM commands, defined in commands.h.
+  returns 0 if no command matched.
+*/
 {
-    USART_INTERRUPT_TRIGGERED = 1;
+    char input[255];
+    char buff[3];
+
+    uart_getline(input, sizeof(input) / sizeof(input[0]));
+    
+    if (strcmp(input, "ON") == 0)
+    {
+        toggle_led_on(1);
+    }
+    else if(strcmp(input, "OFF") == 0)
+    {
+        toggle_led_off(1);
+    }
+    return 0;
 }
 
 void parseUartCommand(char* buf)
