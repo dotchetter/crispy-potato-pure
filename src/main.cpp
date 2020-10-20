@@ -14,6 +14,7 @@ void switchLed();
 StateMachine<char> sm = StateMachine<char>(0, &idle);
 
 void setup()
+void init()
 /*
     Pin definitions using CrispyPotato Shield:
     
@@ -86,6 +87,7 @@ int main()
 {
     unsigned long last_iter_ms;
     setup();
+    init();
     
     while(1)
     {
