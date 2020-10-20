@@ -1,5 +1,7 @@
 #include <avr/io.h>
+#include <util/atomic.h>
 #include <string.h>
+#include <util/delay.h>
 #include "serial.h"
 
 void uart_init()
@@ -71,20 +73,28 @@ unsigned char uart_getchar()
     return UDR0;
 }
 
-void uart_getline(char* buf)
+void uart_getline(char* command_buf, int size)
 {
-    char c;
-    static unsigned long bufcount = 0;
+    int count = 0;
+    char incoming;
 
-    while (c != '\r') {
-        c = uart_getchar();
-        if (c >= 1)
-            buf[bufcount++] = c;
+    ATOMIC_BLOCK(ATOMIC_FORCEON)
+    {
+        while (count < (size-1)) 
+        {
+            incoming = uart_getchar();
+            
+            if (incoming < 1 || incoming == '\r')
+            {
+                break;
+            }
 
-        if (bufcount == (sizeof(buf) / sizeof(buf[0]) - 1))
-            break;
+            command_buf[count] = incoming;
+            count++;
+            _delay_us(500);
+        }
+        command_buf[count] = '\0';
     }
-    buf[bufcount+1] = '\0';
     bufcount = 0;
 }
 
