@@ -5,6 +5,13 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+// Pin definitions using CrispyPotato Shield:
+#define LED_RED 3       // (PORTB BIT 3)
+#define LED_GREEN 9     // (PORTB BIT 1)
+#define LED_BLUE 10     // (PORTB BIT 2)
+#define BUTTON_1 8      // (PORTB BIT 0)
+#define BUTTON_2 12     // (PORTB BIT 4)
+
 // Macros
 #define toggle_led_on(LED) (PORTB = 1 << LED | PORTB)
 #define toggle_led_off(LED) (PORTB = ~(1 << LED) & PORTB)
