@@ -107,7 +107,6 @@ void uart_getline(char* command_buf, int size)
         }
         command_buf[count] = '\0';
     }
-    bufcount = 0;
 }
 
 void uart_echo()
