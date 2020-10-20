@@ -86,20 +86,35 @@ void switchLed()
    sm.release();
 }
 
+void idle()
+{
+    static unsigned long last_iter_ms;
+    char command_buf[128];
+    
+    if (USART_INTERRUPT_TRIGGERED)
+    {
+        parseUartCommand(command_buf);
+        switchLed();
+        USART_INTERRUPT_TRIGGERED = 0;
+        uart_putstr(command_buf);
+    }
+    
+    if (millis() - last_iter_ms >= 250)
+    {
+        // TODO
+        last_iter_ms = millis();
+    }
+}
+
 int main()
 {
-    unsigned long last_iter_ms;
-    setup();
+    fp_t next_state;
+    
     init();
     
-    while(1)
+    for(;;)
     {
-        if (millis() - last_iter_ms >= 250)
-        {
-            switchLed();
-            last_iter_ms = millis();
-        }
-        //_delay_ms(500);
-        //uart_echo();
+        next_state = sm.next();
+        next_state();
     }
 }
