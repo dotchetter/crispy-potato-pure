@@ -69,6 +69,11 @@ void toggleLedOff(int led)
     PORTB = ~(1 << led) & PORTB;
 }
 
+void parseUartCommand(char* buf)
+{
+    uart_getline(buf);
+}
+
 void switchLed()
 {
     static char next_direction;
