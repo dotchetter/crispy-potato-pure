@@ -72,7 +72,7 @@ void uart_putstr(const char *str)
     #endif
 }
 
-unsigned char uart_getchar()
+const unsigned char uart_getchar()
 /*
 * Returns byte available in UDR0 register
 * at time of call. If the bit is LOW for UDRE0,
@@ -81,11 +81,25 @@ unsigned char uart_getchar()
 {
 
     if (!serial_available())
-        return 0;
+        return -1;
     return UDR0;
 }
 
 void uart_getline(char* command_buf, int size)
+/*
+* Read UART until delimiter or buffer exhaustion is reached.
+* The function is designed to be called by an interrupt 
+* service routine, which is why the loop is declared 
+* in an atomic block. The block will run until either the
+* UDR0 register returns NULL, a defined delimiter is encountered,
+* or the buffer is filled to the fullest.
+* 
+* For stability reasons a 500 microsecond delay is implemented 
+* in each iteration to give the microcontroller a few CPU cycles
+* to set the UDR0 register with the next char in sequence. 
+* This mitigates an issue where to quick polls from this register
+* would yield garbage data and NULL's.
+*/
 {
     int count = 0;
     char incoming;
