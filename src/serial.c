@@ -114,6 +114,6 @@ void uart_echo()
 {
     char input[255];
     memset(input, 0, sizeof(input) / sizeof(input[0]));
-    uart_getline(input);
+    uart_getline(input, sizeof(input) / sizeof(input[0]));
     uart_putstr(input);
 }
