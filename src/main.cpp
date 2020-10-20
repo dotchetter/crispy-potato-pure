@@ -81,9 +81,9 @@ const char parse_uart_command()
     return 0;
 }
 
-void parseUartCommand(char* buf)
+ISR (USART_RX_vect)
 {
-    uart_getline(buf);
+    parse_uart_command();
 }
 
 void switchLed()
