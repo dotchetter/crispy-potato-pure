@@ -4,6 +4,12 @@
 #include <util/delay.h>
 #include "serial.h"
 
+#define WIN_ENDL "\r"
+#define LINUX_END "\n"
+
+// Change this depending on platform for serial terminal
+#define ENDL WIN_ENDL
+
 void uart_init()
 /*
  * Sets baudrate in UBRR HIGH and LOW registers.
@@ -58,6 +64,12 @@ void uart_putstr(const char *str)
         while (!serial_write_ready()); 
         uart_putchar(*str++);
     }
+    #ifdef WIN_ENDL
+    uart_putchar('\r');
+    uart_putchar('\n');
+    #else
+    uart_putchar('\n');
+    #endif
 }
 
 unsigned char uart_getchar()
