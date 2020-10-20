@@ -67,7 +67,7 @@ unsigned char uart_getchar()
 {
 
     if (!serial_available())
-        return -1;
+        return 0;
     return UDR0;
 }
 
