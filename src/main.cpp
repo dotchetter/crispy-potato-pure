@@ -85,7 +85,6 @@ void idle()
         parseUartCommand(command_buf);
         switchLed();
         USART_INTERRUPT_TRIGGERED = 0;
-        uart_putstr(command_buf);
     }
     
     if (millis() - last_iter_ms >= 250)
