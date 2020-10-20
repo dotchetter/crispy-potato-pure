@@ -39,15 +39,17 @@ void init()
     // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
     UCSR0B |= (1 << RXCIE0);
 
+    // Initialize UART. Used to receive commands
     uart_init();
 
-    /* State map: 0 :: idle function, main state
-                  1 :: switchLed
-                  2 :: parseUart
+    /* State map: 0 :: idle_state function, main state
+                  1 :: armed_state
+                  2 :: desarmed_state
     */
-    sm.addState(1, &switchLed);
+    sm.addState(1, &armed_state);
+    sm.addState(2, &desarmed_state);
 
-    // Disable interrupt routines and enable millis
+    // Temporarily disable interrupt routines and enable millis
     cli();
     init_millis(F_CPU);
 
