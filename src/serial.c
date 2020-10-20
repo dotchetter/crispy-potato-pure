@@ -76,9 +76,6 @@ void uart_getline(char* buf)
     char c;
     static unsigned long bufcount = 0;
 
-    if (!serial_available())
-        return;
-
     while (c != '\r') {
         c = uart_getchar();
         if (c >= 1)
