@@ -13,7 +13,9 @@ void switchLed();
 // Globally accessible statemachine instance
 StateMachine<char> sm = StateMachine<char>(0, &idle);
 
-void setup()
+// Volatile byte used for interrupts
+volatile uint8_t USART_INTERRUPT_TRIGGERED;
+
 void init()
 /*
     Pin definitions using CrispyPotato Shield:
@@ -53,13 +55,9 @@ void init()
 // Configure interrupt routine for USART_RX vector, with defined action
 ISR (USART_RX_vect)
 {
-    uart_echo();
+    USART_INTERRUPT_TRIGGERED = 1;
 }
 
-void idle()
-{
-    sm.transitionTo(1);
-}
 
 void toggleLedOn(int led)
 {
