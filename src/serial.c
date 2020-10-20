@@ -109,8 +109,8 @@ void uart_getline(char* command_buf, int size)
         while (count < (size-1)) 
         {
             incoming = uart_getchar();
-            
-            if (incoming < 1 || incoming == '\r')
+
+            if (incoming < 1 || incoming == ENDL)
             {
                 break;
             }
