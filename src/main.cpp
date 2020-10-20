@@ -5,24 +5,27 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <string.h>
 
 // Pin definitions using CrispyPotato Shield:
 #define LED_RED   3  // (PORTB BIT 3)
 #define LED_GREEN 1  // (PORTB BIT 1, pin 9)
 #define LED_BLUE  2  // (PORTB BIT 2, pin 10)
 #define BUTTON_1  0  // (PORTB BIT 0, pin 8)
-#define BUTTON_2 12     // (PORTB BIT 4)
+#define BUTTON_2  4  // (PORTB BIT 4, pin 12)
 
 // Macros
 #define toggle_led_on(LED) (PORTB = 1 << LED | PORTB)
 #define toggle_led_off(LED) (PORTB = ~(1 << LED) & PORTB)
 
 // State function pointer declarations
-void idle();
-void switchLed();
+void armed_state();
+void desarmed_state();
+void idle_state();
+void switch_led(int led);
 
 // Globally accessible statemachine instance
-StateMachine<char> sm = StateMachine<char>(0, &idle);
+StateMachine<char> sm = StateMachine<char>(0, &idle_state);
 
 // Volatile byte used for interrupts
 volatile uint8_t USART_INTERRUPT_TRIGGERED;
