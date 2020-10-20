@@ -5,6 +5,9 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+// Macros
+#define toggle_led_on(LED) (PORTB = 1 << LED | PORTB)
+#define toggle_led_off(LED) (PORTB = ~(1 << LED) & PORTB)
 
 // State function pointer declarations
 void idle();
@@ -56,17 +59,6 @@ void init()
 ISR (USART_RX_vect)
 {
     USART_INTERRUPT_TRIGGERED = 1;
-}
-
-
-void toggleLedOn(int led)
-{
-    PORTB = 1 << led | PORTB;
-}
-
-void toggleLedOff(int led)
-{
-    PORTB = ~(1 << led) & PORTB;
 }
 
 void parseUartCommand(char* buf)
