@@ -5,8 +5,8 @@ extern "C" {
 #define SERIAL_H_
 
 
-#define F_CPU 16000000 // Atmega 328P 16Mhz
-#define BAUD 38400
+#define F_CPU 16000000UL // Atmega 328P 16Mhz
+#define BAUD 38400UL
 #define UBRR ((F_CPU/16/BAUD) - 1)
 
 void uart_init();
