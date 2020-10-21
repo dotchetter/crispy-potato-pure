@@ -14,9 +14,8 @@
 #define BUTTON_1  0  // (PORTB BIT 0, pin 8)
 #define BUTTON_2  4  // (PORTB BIT 4, pin 12)
 
-// Macros
-#define toggle_led_on(LED) (PORTB = 1 << LED | PORTB)
-#define toggle_led_off(LED) (PORTB = ~(1 << LED) & PORTB)
+// Preferences
+#define LED_BLINK_INTERVAL_MS 1000
 
 // State function pointer declarations
 void armed_state();
