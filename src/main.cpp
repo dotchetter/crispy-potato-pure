@@ -2,6 +2,7 @@
 #include "StateMachine.h"
 #include "millis.c"
 #include "commands.h"
+#include "entity.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -22,9 +23,14 @@ void armed_state();
 void desarmed_state();
 void idle_state();
 void switch_led(int led);
+void toggle_led_off(ENTITY_LED *led);
+void toggle_led_on(ENTITY_LED *led);
 
-// Globally accessible statemachine instance
+// Globally accessible instances
 StateMachine<char> sm = StateMachine<char>(0, &idle_state);
+ENTITY_LED red_led;
+ENTITY_LED green_led;
+ENTITY_LED blue_led;
 
 // Volatile byte used for interrupts
 volatile uint8_t USART_INTERRUPT_TRIGGERED;
@@ -41,12 +47,19 @@ void init()
     // Initialize UART. Used to receive commands
     uart_init();
 
-    /* State map: 0 :: idle_state function, main state
-                  1 :: armed_state
-                  2 :: desarmed_state
-    */
+    // Add states
     sm.addState(1, &armed_state);
     sm.addState(2, &desarmed_state);
+
+    // Configure LED entities
+    red_led.registry_bit = LED_RED;
+    red_led.is_lit = 0;
+
+    green_led.registry_bit = LED_GREEN;
+    green_led.is_lit = 0;
+
+    blue_led.registry_bit = LED_BLUE;
+    blue_led.is_lit = 0;
 
     // Temporarily disable interrupt routines and enable millis
     cli();
@@ -54,9 +67,24 @@ void init()
 
     // Enable interrupt routines
     sei();
+
+    // Green light on
+    toggle_led_on(&green_led);
+    //green_led.is_lit = 1led
 }
 
-const char parse_uart_command()
+void toggle_led_on(ENTITY_LED *led)
+{
+    PORTB = 1 << led->registry_bit | PORTB;
+    led->is_lit = 1;
+}
+
+void toggle_led_off(ENTITY_LED *led)
+{   
+    PORTB = ~(1 << led->registry_bit) & PORTB;
+    led->is_lit = 0;
+}
+
 /*
 * Read the incoming command over USART. Parses the command and
   returns the int value for map place of given command in the 
@@ -92,9 +120,20 @@ void switchLed()
     switch (next_direction) {
         case 0: toggle_led_on(LED_RED); next_direction = 1; break;
         case 1: toggle_led_off(LED_RED); next_direction = 0; break;
-    }
 
-   sm.release();
+    if (millis() - last_call_ms >= LED_BLINK_INTERVAL_MS)
+    {
+        if(red_led.is_lit)
+        {
+            toggle_led_off(&red_led);
+        }
+        else
+        {
+            toggle_led_on(&red_led);
+        }
+        last_call_ms = millis();
+    }    
+    sm.release();
 }
 
 void idle()
