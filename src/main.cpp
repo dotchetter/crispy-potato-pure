@@ -33,7 +33,7 @@ ENTITY_LED green_led;
 ENTITY_LED blue_led;
 
 // Volatile byte used for interrupts
-volatile uint8_t USART_INTERRUPT_TRIGGERED;
+volatile uint8_t ISR_UART_STATE;
 
 void init()
 {
