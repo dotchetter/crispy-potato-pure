@@ -97,29 +97,31 @@ void toggle_led_off(ENTITY_LED *led)
 
     uart_getline(input, sizeof(input) / sizeof(input[0]));
     
-    if (strcmp(input, "ON") == 0)
+    if (strcmp_P(input, command_on) == 0)
     {
-        toggle_led_on(1);
+        return 1;
     }
-    else if(strcmp(input, "OFF") == 0)
+    else if(strcmp_P(input, command_off) == 0)
     {
-        toggle_led_off(1);
+        return 2;
     }
     return 0;
 }
 
 ISR (USART_RX_vect)
+/*
+* interrupt service routine, triggered by received chars
+* in the USART buffer on UDR0 register.
+*/
 {
-    parse_uart_command();
+    ISR_UART_STATE = parse_command();
 }
 
-void switchLed()
+void armed_state()
 {
-    static char next_direction;
+    static unsigned long last_call_ms;
 
-    switch (next_direction) {
-        case 0: toggle_led_on(LED_RED); next_direction = 1; break;
-        case 1: toggle_led_off(LED_RED); next_direction = 0; break;
+    toggle_led_off(&green_led);
 
     if (millis() - last_call_ms >= LED_BLINK_INTERVAL_MS)
     {
