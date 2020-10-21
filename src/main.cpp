@@ -85,6 +85,8 @@ void toggle_led_off(ENTITY_LED *led)
     led->is_lit = 0;
 }
 
+
+const char parse_command()
 /*
 * Read the incoming command over USART. Parses the command and
   returns the int value for map place of given command in the 
