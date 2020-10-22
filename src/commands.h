@@ -1,6 +1,4 @@
 #pragma once
-#ifndef COMMANDS_H
-#define COMMANDS_H
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 
