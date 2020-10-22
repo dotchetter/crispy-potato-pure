@@ -4,8 +4,8 @@
 #include <util/delay.h>
 #include "serial.h"
 
-#define WIN_ENDL "\r"
-#define LINUX_END "\n"
+#define WIN_ENDL '\r'
+#define LINUX_END '\n'
 
 // Change this depending on platform for serial terminal
 #define ENDL WIN_ENDL

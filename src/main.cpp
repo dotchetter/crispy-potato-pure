@@ -5,7 +5,6 @@
 #include "entity.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include <string.h>
 
 // Pin definitions using CrispyPotato Shield:
@@ -18,13 +17,7 @@
 // Preferences
 #define LED_BLINK_INTERVAL_MS 1000
 
-// State function pointer declarations
-void armed_state();
-void desarmed_state();
 void idle_state();
-void switch_led(int led);
-void toggle_led_off(ENTITY_LED *led);
-void toggle_led_on(ENTITY_LED *led);
 
 // Globally accessible instances
 StateMachine<char> sm = StateMachine<char>(0, &idle_state);
@@ -34,44 +27,6 @@ ENTITY_LED blue_led;
 
 // Volatile byte used for interrupts
 volatile uint8_t ISR_UART_STATE;
-
-void init()
-{
-    // DDRB MUST BE: 00001110 (0 TO LISTEN, 1 TO WRITE)
-    // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
-    DDRB = (7 << 1);
-
-    // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
-    UCSR0B |= (1 << RXCIE0);
-
-    // Initialize UART. Used to receive commands
-    uart_init();
-
-    // Add states
-    sm.addState(1, &armed_state);
-    sm.addState(2, &desarmed_state);
-
-    // Configure LED entities
-    red_led.registry_bit = LED_RED;
-    red_led.is_lit = 0;
-
-    green_led.registry_bit = LED_GREEN;
-    green_led.is_lit = 0;
-
-    blue_led.registry_bit = LED_BLUE;
-    blue_led.is_lit = 0;
-
-    // Temporarily disable interrupt routines and enable millis
-    cli();
-    init_millis(F_CPU);
-
-    // Enable interrupt routines
-    sei();
-
-    // Green light on
-    toggle_led_on(&green_led);
-    //green_led.is_lit = 1led
-}
 
 void toggle_led_on(ENTITY_LED *led)
 {
@@ -85,8 +40,7 @@ void toggle_led_off(ENTITY_LED *led)
     led->is_lit = 0;
 }
 
-
-const char parse_command()
+const uint8_t parse_command()
 /*
 * Read the incoming command over USART. Parses the command and
   returns the int value for map place of given command in the 
@@ -119,6 +73,12 @@ ISR (USART_RX_vect)
     ISR_UART_STATE = parse_command();
 }
 
+void disarmed_state()
+{
+    toggle_led_on(&green_led);
+    toggle_led_off(&red_led);
+}
+
 void armed_state()
 {
     static unsigned long last_call_ms;
@@ -140,32 +100,58 @@ void armed_state()
     sm.release();
 }
 
-void idle()
+void idle_state()
 {
-    static unsigned long last_iter_ms;
-    char command_buf[128];
-    
-    if (USART_INTERRUPT_TRIGGERED)
-    {
-        parseUartCommand(command_buf);
-        switchLed();
-        USART_INTERRUPT_TRIGGERED = 0;
-    }
-    
-    if (millis() - last_iter_ms >= 250)
-    {
-        // TODO
-        last_iter_ms = millis();
-    }
+    // Transition to the state which maps to the char given by the interrupt routine
+    sm.transitionTo(ISR_UART_STATE);
+}
+
+void init()
+{
+    // DDRB MUST BE: 00001110 (0 TO LISTEN, 1 TO WRITE)
+    // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
+    DDRB = (7 << 1);
+
+    // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
+    UCSR0B |= (1 << RXCIE0);
+
+    // Initialize UART. Used to receive commands
+    uart_init();
+
+    // Add states
+    sm.addState(1, &armed_state);
+    sm.addState(2, &disarmed_state);
+
+    // Configure LED entities
+    red_led.registry_bit = LED_RED;
+    red_led.is_lit = 0;
+
+    green_led.registry_bit = LED_GREEN;
+    green_led.is_lit = 0;
+
+    blue_led.registry_bit = LED_BLUE;
+    blue_led.is_lit = 0;
+
+    // Temporarily disable interrupt routines and enable millis
+    cli();
+    init_millis(F_CPU);
+
+    // Enable interrupt routines
+    sei();
+
+    // Green light on
+    toggle_led_on(&green_led);
 }
 
 int main()
 {
+    // Function pointer variable used to store the pointer given by the StateMachine
     fp_t next_state;
     
+    // Initialize the runtime environment
     init();
     
-    for(;;)
+    while(1)
     {
         next_state = sm.next();
         next_state();
