@@ -61,11 +61,11 @@ const uint8_t parse_command()
 
     uart_getline(input, sizeof(input) / sizeof(input[0]));
     
-    if (strcmp_P(input, command_on) == 0)
+    if (strcasecmp_P(input, command_on) == 0)
     {
         return 1;
     }
-    else if(strcmp_P(input, command_off) == 0)
+    else if(strcasecmp_P(input, command_off) == 0)
     {
         return 2;
     }
