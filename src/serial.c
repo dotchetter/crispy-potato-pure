@@ -5,10 +5,7 @@
 #include "serial.h"
 
 #define WIN_ENDL '\r'
-#define LINUX_END '\n'
-
-// Change this depending on platform for serial terminal
-#define ENDL WIN_ENDL
+#define LINUX_ENDL '\n'
 
 void uart_init()
 /*
@@ -110,7 +107,7 @@ void uart_getline(char* command_buf, int size)
         {
             incoming = uart_getchar();
 
-            if (incoming < 1 || incoming == ENDL)
+            if (incoming < 1 || incoming == WIN_ENDL || incoming == LINUX_ENDL)
             {
                 // Empty the UDR0 register to mitigate leaking '\n' character
                 while(serial_available());
