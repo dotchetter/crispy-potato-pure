@@ -10,7 +10,10 @@
 void uart_init()
 /*
  * Sets baudrate in UBRR HIGH and LOW registers.
- * :param ubrr: calculated Uart Baud Register Rate (UBRR)
+ * Referred " UBRR " defined in serial.h
+ * 
+ * 8N1 is defined by default for the ATmega328p which
+ * is why the frame format register is left unchanged.
 */
 {
     // Set UBRR HIGH and LOW register values, considering provided UBRR value
