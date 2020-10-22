@@ -1,5 +1,5 @@
-#pragma once
-#include <avr/io.h>
+#ifndef COMMANDS_H_
+#define COMMANDS_H_
 #include <avr/pgmspace.h>
 
 const char command_on[] PROGMEM = "ON";
