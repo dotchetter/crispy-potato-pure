@@ -112,6 +112,8 @@ void uart_getline(char* command_buf, int size)
 
             if (incoming < 1 || incoming == ENDL)
             {
+                // Empty the UDR0 register to mitigate leaking '\n' character
+                while(serial_available());
                 break;
             }
 
