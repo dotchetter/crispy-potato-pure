@@ -19,8 +19,16 @@
 
 void idle_state();
 
-// Globally accessible instances
+// -------------------------------------
+// --- Globally accessible instances --- 
+// -------------------------------------
+//
+// Statemachine used to bind function pointers to chars.
+// For info on this library, see: 
+// https://github.com/dotchetter/StateMachineEmbedded
+
 StateMachine<char> sm = StateMachine<char>(0, &idle_state);
+
 ENTITY_LED red_led;
 ENTITY_LED green_led;
 ENTITY_LED blue_led;
