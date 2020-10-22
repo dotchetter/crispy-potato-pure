@@ -159,6 +159,8 @@ int main()
     // Initialize the runtime environment
     init();
     
+    // Program main loop - poll the StateMachine instance
+    // for the next function call ( State ) in line.
     while(1)
     {
         next_state = sm.next();
