@@ -103,6 +103,9 @@ void uart_getline(char* command_buf, int size)
 {
     int count = 0;
     char incoming;
+    
+    // Tohrow-away variable, used to drain the UDR0 registry when transmission is complete.
+    char _; 
 
     ATOMIC_BLOCK(ATOMIC_FORCEON)
     {
@@ -113,7 +116,10 @@ void uart_getline(char* command_buf, int size)
             if (incoming < 1 || incoming == WIN_ENDL || incoming == LINUX_ENDL)
             {
                 // Empty the UDR0 register to mitigate leaking '\n' character
-                while(serial_available());
+                while(serial_available())
+                {
+                    _ = uart_getchar();
+                }
                 break;
             }
 
