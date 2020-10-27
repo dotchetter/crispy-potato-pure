@@ -131,39 +131,29 @@ void armed_state()
 
 void idle_state()
 {
+    static uint8_t uart_desired_state;
+    
     // Transition to the state which maps to the char given by the interrupt routine
-    sm.transitionTo(ISR_UART_STATE);
+    if (UART_INTERRUPT_TRIGGERED)
+    {
+        uart_desired_state = parse_command();
+        UART_INTERRUPT_TRIGGERED = 0;
+    }    
+
+    sm.transitionTo(uart_desired_state);
 }
 
-void init()
+
+// Interrupt Service Routine definitions
+
+ISR (USART_RX_vect)
+/*
+* interrupt service routine, triggered by received chars
+* in the USART buffer on UDR0 register.
+*/
 {
-    // DDRB MUST BE: 00001110 (0 TO LISTEN, 1 TO WRITE)
-    // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
-    DDRB = (7 << 1);
-
-    // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
-    UCSR0B |= (1 << RXCIE0);
-
-    // Initialize UART. Used to receive commands
-    uart_init();
-
-    // Add states
-    sm.addState(1, &armed_state);
-    sm.addState(2, &disarmed_state);
-
-    // Configure LED entities
-    red_led.registry_bit = LED_RED;
-    red_led.is_lit = 0;
-
-    green_led.registry_bit = LED_GREEN;
-    green_led.is_lit = 0;
-
-    blue_led.registry_bit = LED_BLUE;
-    blue_led.is_lit = 0;
-
-    // Temporarily disable interrupt routines and enable millis
-    cli();
-    init_millis(F_CPU);
+    UART_INTERRUPT_TRIGGERED = 1;
+}
 
     // Enable interrupt routines
     sei();
