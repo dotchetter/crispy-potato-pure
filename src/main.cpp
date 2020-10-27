@@ -37,16 +37,36 @@ ENTITY_LED blue_led;
 // Volatile byte used for interrupts
 volatile uint8_t ISR_UART_STATE;
 
-void toggle_led_on(ENTITY_LED *led)
+void init()
 {
-    PORTB = 1 << led->registry_bit | PORTB;
-    led->is_lit = 1;
-}
+    // DDRB MUST BE: 00001110 (0 TO LISTEN, 1 TO WRITE)
+    // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
+    DDRB = (7 << 1);
 
-void toggle_led_off(ENTITY_LED *led)
-{   
-    PORTB = ~(1 << led->registry_bit) & PORTB;
-    led->is_lit = 0;
+    // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
+    UCSR0B |= (1 << RXCIE0);
+
+    // Initialize UART. Used to receive commands
+    uart_init();
+    
+    // Add states
+    sm.addState(1, &armed_state);
+    sm.addState(2, &disarmed_state);
+
+    // Configure LED entities
+    red_led.registry_bit = LED_RED;
+    red_led.is_lit = 0;
+
+    green_led.registry_bit = LED_GREEN;
+    green_led.is_lit = 0;
+
+    blue_led.registry_bit = LED_BLUE;
+    blue_led.is_lit = 0;
+
+    // Temporarily disable interrupt routines and enable millis and enable interrupts
+    cli();
+    timer_init();
+    sei();
 }
 
 const uint8_t parse_command()
