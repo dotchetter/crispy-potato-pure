@@ -8,7 +8,7 @@
 #include <avr/interrupt.h>
 #include <string.h>
 
-// Pin definitions using CrispyPotato Shield:
+//Pin definitions using CrispyPotato Shield:
 #define LED_RED   3  // (PORTB BIT 3)
 #define LED_GREEN 1  // (PORTB BIT 1, pin 9)
 #define LED_BLUE  2  // (PORTB BIT 2, pin 10)
@@ -98,8 +98,6 @@ const uint8_t parse_command()
 
 
 // Functions representing different states, coupled to the statemachine 
-    ISR_UART_STATE = parse_command();
-}
 
 void disarmed_state()
 {
@@ -154,12 +152,7 @@ ISR (USART_RX_vect)
     UART_INTERRUPT_TRIGGERED = 1;
 }
 
-    // Enable interrupt routines
-    sei();
 
-    // Green light on
-    toggle_led_on(&green_led);
-}
 
 int main()
 {
