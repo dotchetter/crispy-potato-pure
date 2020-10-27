@@ -156,17 +156,25 @@ ISR (USART_RX_vect)
 
 int main()
 {
-    // Function pointer variable used to store the pointer given by the StateMachine
-    fp_t next_state;
-    
+    //Assignment 1.4.1
+
+    uint32_t timer_cnt = 0;
+
     // Initialize the runtime environment
     init();
-    
-    // Program main loop - poll the StateMachine instance
-    // for the next function call ( State ) in line.
+
     while(1)
-    {
-        next_state = sm.next();
-        next_state();
+    {   
+        if (TIFR0 & (1 << OCF0A))  // Timer0 flag matched defined
+        {
+            timer_cnt++;
+            TIFR0 &= ~(1 << TOV0); // Clear the flag
+        }
+        
+        if (timer_cnt == 10)       // 10ms passed - toggle led on or off
+        {
+            timer_cnt = 0;
+            switch_led(&green_led);
+        }        
     }
 }
