@@ -1,8 +1,9 @@
 #include "serial.h"
+#include "timer.h"
 #include "StateMachine.h"
-#include "millis.c"
 #include "commands.h"
 #include "entity.h"
+#include "led.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <string.h>
