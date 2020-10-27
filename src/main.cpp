@@ -18,6 +18,9 @@
 // Preferences
 #define LED_BLINK_INTERVAL_MS 1000
 
+// Compiler contract - methods defined below
+void armed_state();
+void disarmed_state();
 void idle_state();
 
 // -------------------------------------
