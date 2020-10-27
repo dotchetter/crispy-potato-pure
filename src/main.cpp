@@ -38,7 +38,7 @@ ENTITY_LED green_led;
 ENTITY_LED blue_led;
 
 // Volatile byte used for interrupts
-volatile uint8_t ISR_UART_STATE;
+volatile uint8_t UART_INTERRUPT_TRIGGERED;
 
 void init()
 {
@@ -96,12 +96,8 @@ const uint8_t parse_command()
     return 0;
 }
 
-ISR (USART_RX_vect)
-/*
-* interrupt service routine, triggered by received chars
-* in the USART buffer on UDR0 register.
-*/
-{
+
+// Functions representing different states, coupled to the statemachine 
     ISR_UART_STATE = parse_command();
 }
 
