@@ -77,7 +77,6 @@ void init()
     // Temporarily disable interrupt routines and enable millis
     cli();
     timer_init();
-    sei();
 }
 
 const uint8_t parse_command()
