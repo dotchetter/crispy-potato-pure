@@ -1,8 +1,5 @@
 
 #include "timer.h"
-#define CPU 16000000UL
-#define PRESCALER 1024UL
-#define RATE 100UL
 
 volatile uint32_t timer0_ms;
 
