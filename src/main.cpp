@@ -164,25 +164,21 @@ ISR (USART_RX_vect)
 
 int main()
 {
-    //Assignment 1.4.1
-
-    uint32_t timer_cnt = 0;
-
-    // Initialize the runtime environment
+    char direction = 0;
+    uint32_t last_millis = 0;
     init();
 
     while(1)
     {   
-        if (TIFR0 & (1 << OCF0A))  // Timer0 flag matched defined
+        for (int i = 0; i < 255; i++)
         {
-            timer_cnt++;
-            TIFR0 &= ~(1 << TOV0); // Clear the flag
+            if (millis() - last_millis < 5)
+            {
+                i--; continue;
+            }
+            direction ? OCR0A++ : OCR0A--;
+            last_millis = millis();
         }
-        
-        if (timer_cnt == 10)       // 10ms passed - toggle led on or off
-        {
-            timer_cnt = 0;
-            switch_led(&green_led);
-        }        
+        direction = !direction;
     }
 }
