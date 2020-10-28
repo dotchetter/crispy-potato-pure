@@ -100,6 +100,11 @@ const uint8_t parse_command()
     {
         return 2;
     }
+    else if(strcasecmp_P(input, command_die) == 0)
+    {
+        toggle_led_off(&red_led);
+        toggle_led_off(&green_led);
+    }
     return 0;
 }
 
