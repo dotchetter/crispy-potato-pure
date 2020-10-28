@@ -9,9 +9,10 @@
 #include <string.h>
 
 //Pin definitions using CrispyPotato Shield:
-#define LED_RED   3  // (PORTB BIT 3)
+#define LED_RED   3  // (PORTB BIT 3, pin 11)
 #define LED_GREEN 1  // (PORTB BIT 1, pin 9)
 #define LED_BLUE  2  // (PORTB BIT 2, pin 10)
+#define LED_PWM   6  // (PORTD BIT 6, pin 6)
 #define BUTTON_1  0  // (PORTB BIT 0, pin 8)
 #define BUTTON_2  4  // (PORTB BIT 4, pin 12)
 
