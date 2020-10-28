@@ -37,15 +37,19 @@ StateMachine<char> sm = StateMachine<char>(0, &idle_state);
 ENTITY_LED red_led;
 ENTITY_LED green_led;
 ENTITY_LED blue_led;
+ENTITY_LED pwm_led;
 
 // Volatile byte used for interrupts
 volatile uint8_t UART_INTERRUPT_TRIGGERED;
 
 void init()
 {
-    // DDRB MUST BE: 00001110 (0 TO LISTEN, 1 TO WRITE)
+    // (0 TO LISTEN (INPUT), 1 TO WRITE (OUTPUT))
     // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
-    DDRB = (7 << 1);
+    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3)); 
+    
+    // Enable pin 6 as output, which isn
+    DDRD |= _BV(PORTD6);
 
     // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
     UCSR0B |= (1 << RXCIE0);
@@ -67,7 +71,10 @@ void init()
     blue_led.registry_bit = LED_BLUE;
     blue_led.is_lit = 0;
 
-    // Temporarily disable interrupt routines and enable millis and enable interrupts
+    pwm_led.registry_bit = LED_PWM;
+    pwm_led.is_lit = 0;
+
+    // Temporarily disable interrupt routines and enable millis
     cli();
     timer_init();
     sei();
