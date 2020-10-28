@@ -47,17 +47,18 @@ void timer_init()
 * 
 */
 {
-	// Set TIMER0 mode to 2 (CTC (Clear Timer on Compare)) by setting the WGM01 bit to 1. In binary: 0b00000010
-	TCCR0A |= (1 << WGM01);
+	// Set TIMER0 mode to Waveform Generation Mode 3 (FAST PWM TOP=0xFF Non-Inverted)
+	TCCR0A |= (1 << WGM00) | (1 << WGM01) | (1 << COM0A1);
 
-	// Set the prescaler (clock divisor) to 1024 by toggling CS00 and CS02 in TCCR0B. In binary: 0b00000101
-	TCCR0B |= (1 << CS02) | (1 << CS00); 
-
-	// Calculate the output compare value
-	OCR0A |= (CPU / PRESCALER / RATE - 1);
+	// Set the prescaler (clock divisor) to 64 by toggling CS00 and CS01 in TCCR0B.
+	// This yields a frequency of 16*10^6 / (64 * 256) = 977 (rounded up) hz for the PWM LED.
+	TCCR0B |= (1 << CS01) | (1 << CS00); 
 
 	// Enable the compare match interupt for timer0
-	//TIMSK0 |= (1 << OCIE0A);
+	TIMSK0 |= (1 << OCIE0A);
+
+	// Enable global interrupts
+	sei();
 }
 
 uint32_t millis()
