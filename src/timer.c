@@ -2,13 +2,70 @@
 #include "timer.h"
 
 volatile uint32_t timer0_ms;
+volatile uint8_t timer2_triggered;
 
 ISR (TIMER0_COMPA_vect)
 {
     timer0_ms++;
 }
 
-void timer_init()
+
+ISR (TIMER2_COMPA_vect)
+{
+	timer2_triggered = 1;
+}
+
+
+uint8_t simple_ramp()
+/*
+* Returns value from 0-255, incrementing
+* with each call and automatically overflows
+* to 0.
+*/
+{
+	static uint8_t count;
+	static uint8_t direction;
+
+ // max = (n1 > n2) ? n1 : n2; 
+	
+	if (!timer2_triggered)
+		return count;
+	
+	if (count == 0)
+		direction = 1;
+	else if (count == 255)
+	    direction = 0;
+	
+	timer2_triggered = 0;
+	direction ? count++ : count--;
+	
+	return count;
+}
+
+void timer2_init()
+/*
+*/
+{
+	// Toggle CTC mode for Timer2
+	TCCR2A |= _BV(WGM21);
+	
+	// Set prescaler to 1024
+	TCCR2B |= _BV(CS22) | _BV(CS21) | _BV(CS20);
+
+	// Enable interrupt trigger for CTC
+	TIMSK2 |= _BV(TOIE1);
+
+	// Configure Output compare register for Timer2 to trigger every 16ms (251)
+  	OCR2A = (F_CPU / 1024 / 62 - 1);
+
+	// Enable CTC interrupt
+	TIMSK2 |= _BV(OCIE2A);
+
+	// Enable global interrupts
+	sei();
+}
+
+void timer0_init()
 /*
 * The oscillator in the ATmega328p is running at 
 * 16,000,000 Hz (16MHz). Since the OCR0A/B registers

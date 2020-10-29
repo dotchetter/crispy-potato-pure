@@ -166,7 +166,6 @@ ISR (USART_RX_vect)
 }
 
 
-
 int main()
 {
     char direction = 0;
@@ -174,16 +173,7 @@ int main()
     init();
 
     while(1)
-    {   
-        for (int i = 0; i < 255; i++)
-        {
-            if (millis() - last_millis < 5)
-            {
-                i--; continue;
-            }
-            direction ? OCR0A++ : OCR0A--;
-            last_millis = millis();
-        }
-        direction = !direction;
+    {
+        OCR0A = simple_ramp();
     }
 }
