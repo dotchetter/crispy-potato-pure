@@ -32,7 +32,7 @@ uint8_t simple_ramp()
 	if (count == 0)
 		direction = 1;
 	else if (count == 255)
-	    direction = 0;
+	    	direction = 0;
 	
 	timer2_triggered = 0;
 	direction ? count++ : count--;
