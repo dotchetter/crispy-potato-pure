@@ -13,7 +13,9 @@ extern "C" {
 #include <avr/interrupt.h>
 
 uint32_t millis();
-void timer_init();
+void timer0_init();
+void timer2_init();
+uint8_t simple_ramp();
 
 #endif
 #ifdef __cplusplus
