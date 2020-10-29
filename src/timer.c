@@ -6,7 +6,7 @@ volatile uint8_t timer2_triggered;
 
 ISR (TIMER0_COMPA_vect)
 {
-    timer0_ms++;
+    	timer0_ms++;
 }
 
 
@@ -25,8 +25,6 @@ uint8_t simple_ramp()
 {
 	static uint8_t count;
 	static uint8_t direction;
-
- // max = (n1 > n2) ? n1 : n2; 
 	
 	if (!timer2_triggered)
 		return count;
@@ -43,8 +41,6 @@ uint8_t simple_ramp()
 }
 
 void timer2_init()
-/*
-*/
 {
 	// Toggle CTC mode for Timer2
 	TCCR2A |= _BV(WGM21);
