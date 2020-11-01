@@ -6,9 +6,9 @@ extern "C" {
 #include <avr/io.h>
 #include "entity.h"
 
-void toggle_led_on(ENTITY_LED *led);
-void toggle_led_off(ENTITY_LED *led);
-void switch_led(ENTITY_LED *led);
+void toggle_led_on(ENTITY *led);
+void toggle_led_off(ENTITY *led);
+void switch_led(ENTITY *led);
 void LED_init(void);
 
 #endif
