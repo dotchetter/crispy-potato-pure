@@ -1,48 +1,15 @@
+#include <avr/io.h>
+#include <util/atomic.h>
+#include <avr/interrupt.h>
 
-#include "timer.h"
-
-volatile uint32_t timer0_ms;
-volatile uint8_t timer2_triggered;
-
-ISR (TIMER0_COMPA_vect)
-{
-    timer0_ms++;
-}
-
+volatile uint32_t timer2_ms;
 
 ISR (TIMER2_COMPA_vect)
 {
-	timer2_triggered = 1;
+	timer2_ms++;
 }
 
-
-uint8_t simple_ramp()
-/*
-* Returns value from 0-255, incrementing
-* with each call and automatically overflows
-* to 0.
-*/
-{
-	static uint8_t count;
-	static uint8_t direction;
-
- // max = (n1 > n2) ? n1 : n2; 
-	
-	if (!timer2_triggered)
-		return count;
-	
-	if (count == 0)
-		direction = 1;
-	else if (count == 255)
-	    direction = 0;
-	
-	timer2_triggered = 0;
-	direction ? count++ : count--;
-	
-	return count;
-}
-
-void timer2_init()
+void timer2_init(uint32_t cpu_clk)
 /*
 */
 {
@@ -55,15 +22,13 @@ void timer2_init()
 	// Enable interrupt trigger for CTC
 	TIMSK2 |= _BV(TOIE1);
 
-	// Configure Output compare register for Timer2 to trigger every 16ms (251)
-  	OCR2A = (F_CPU / 1024 / 62 - 1);
+	// Configure Output compare register for Timer2 to trigger every 1 ms
+  	OCR2A = (cpu_clk / 1024 / 1000 - 1);
 
 	// Enable CTC interrupt
 	TIMSK2 |= _BV(OCIE2A);
-
-	// Enable global interrupts
-	sei();
 }
+
 
 void timer0_init()
 /*
@@ -110,10 +75,8 @@ void timer0_init()
 
 	// Enable the compare match interupt for timer0
 	TIMSK0 |= (1 << OCIE0A);
-
-	// Enable global interrupts
-	sei();
 }
+
 
 uint32_t millis()
 /*
@@ -125,15 +88,15 @@ uint32_t millis()
 * 4,294,967,3 seconds.
 *
 * The capture of the current value of the volatile variable
-* timer0_ms is cloned as to not return a volatile value.
+* timer2_ms is cloned as to not return a volatile value.
 */
 {
-	uint32_t timer0_current_ms;
+	uint32_t timer2_current_ms;
 
 	// Temporarily disable interrupts during this process
 	ATOMIC_BLOCK(ATOMIC_FORCEON) 
 	{
-		timer0_current_ms = timer0_ms;
+		timer2_current_ms = timer2_ms;
 	}
-	return timer0_current_ms;
+	return timer2_current_ms;
 }
