@@ -78,81 +78,6 @@ void init()
     sei();
 }
 
-const uint8_t parse_command()
-/*
-* Read the incoming command over USART. Parses the command and
-  returns the int value for map place of given command in the 
-  lookup table for PROGMEM commands, defined in commands.h.
-  returns 0 if no command matched.
-*/
-{
-    char input[255];
-    char buff[3];
-
-    uart_getline(input, sizeof(input) / sizeof(input[0]));
-    
-    if (strcasecmp_P(input, command_on) == 0)
-    {
-        return 1;
-    }
-    else if(strcasecmp_P(input, command_off) == 0)
-    {
-        return 2;
-    }
-    else if(strcasecmp_P(input, command_die) == 0)
-    {
-        toggle_led_off(&red_led);
-        toggle_led_off(&green_led);
-    }
-    return 0;
-}
-
-
-// Functions representing different states, coupled to the statemachine 
-
-void disarmed_state()
-{
-    toggle_led_on(&green_led);
-    toggle_led_off(&red_led);
-}
-
-void armed_state()
-{
-    static unsigned long last_call_ms;
-
-    toggle_led_off(&green_led);
-
-    if (millis() - last_call_ms >= LED_BLINK_INTERVAL_MS)
-    {
-        if(red_led.is_lit)
-        {
-            toggle_led_off(&red_led);
-        }
-        else
-        {
-            toggle_led_on(&red_led);
-        }
-        last_call_ms = millis();
-    }    
-    sm.release();
-}
-
-void idle_state()
-{
-    static uint8_t uart_desired_state;
-    
-    // Transition to the state which maps to the char given by the interrupt routine
-    if (UART_INTERRUPT_TRIGGERED)
-    {
-        uart_desired_state = parse_command();
-        UART_INTERRUPT_TRIGGERED = 0;
-    }    
-
-    sm.transitionTo(uart_desired_state);
-}
-
-
-// Interrupt Service Routine definitions
 
 ISR (USART_RX_vect)
 /*
@@ -164,14 +89,50 @@ ISR (USART_RX_vect)
 }
 
 
+// --- State functions --- //
+void idle_state()
+{
+    static uint8_t uart_desired_state;
+    static unsigned long last_millis = 0;
+    state last_state = stateMachine.getStaticState();
+
+    if (debounceKey(&key_1) && keyClicked(&key_1))
+    {
+        stateMachine.setStaticState(ACTIVE);
+    }
+    else
+    {
+        stateMachine.setStaticState(INACTIVE);
+    }
+
+    if (last_state != stateMachine.getStaticState())
+    {
+        stateMachine.transitionTo(stateMachine.getStaticState());
+    }
+}
+
+
+void active_state()
+{
+    uart_putstr("Button pressed");
+    stateMachine.release();
+}
+
+
+void inactive_state()
+{
+    uart_putstr("Button released");
+    stateMachine.release();
+}
+
+
 int main()
 {
-    char direction = 0;
-    uint32_t last_millis = 0;
-    init();
+    uint32_t last_millis;
+    init();            
 
     while(1)
-    {
-        OCR0A = simple_ramp();
+    {  
+       stateMachine.next()();
     }
 }
