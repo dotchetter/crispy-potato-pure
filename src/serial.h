@@ -4,6 +4,7 @@ extern "C" {
 #ifndef SERIAL_H_
 #define SERIAL_H_
 
+#include <string.h>
 
 #define F_CPU 16000000UL // Atmega 328P 16Mhz
 #define BAUD 38400UL
