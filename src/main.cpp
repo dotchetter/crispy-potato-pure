@@ -46,24 +46,33 @@ void init()
 * # 1: Enable pin 6 as output for PWM LED
 * # 2: Enable pin 2 as input for pushbutton
 * # 3: Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
-* # 4: Initialize UART. Used to receive commands
-* # 5: Add states to the statemachine
-* # 6: Configure entities
-* # 7: Temporarily disable interrupt routines and enable millis
+* # 4: Set ADMUX[0:3] to 0xFF to set up ADC0 as input with VCC as reference voltage
+* # 5: Enable ADC | set ADC prescaler to 8 | ADC Interrupt Enable | Left-adjust result
+* # 6: Disable Digital buffer on pin A0
+* # 7: Initialize UART. Used to receive commands
+* # 8: Add states to the statemachine
+* # 9: Configure entities
+* # 10: Temporarily disable interrupt routines and enable millis
 */
 {   
-    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3));              //#0
-    DDRD |= _BV(PORTD6);                                            //#1
-    DDRD &= ~(_BV(PORTD2));                                         //#2
-    UCSR0B |= (1 << RXCIE0);                                        //#3
+    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3));              // # 0
+    DDRD |= _BV(PORTD6);                                            // # 1
+    DDRD &= ~(_BV(PORTD2));                                         // # 2
+    UCSR0B |= (1 << RXCIE0);                                        // # 3
+    ADMUX |= _BV(REFS0);                                            // # 4
 
-    uart_init();                                                    //#4
+    ADCSRA |= _BV(ADIE) | _BV(ADEN) | _BV(ADPS0)
+           | _BV(ADPS1) | _BV(ADLAR);                               // # 5
+    
+    DIDR0 |= _BV(ADC0D);                                            // # 6
 
-    stateMachine.addState(ACTIVE, &active_state);                   //#5
+    uart_init();                                                    // # 7
+
+    stateMachine.addState(ACTIVE, &active_state);                   // # 8
     stateMachine.addState(INACTIVE, &inactive_state);
     stateMachine.setStaticState(INACTIVE);
 
-    pwm_led.registry_bit = LED_PWM;                                 //#6
+    pwm_led.registry_bit = LED_PWM;                                 // # 9
     pwm_led.is_active = 0;
     pwm_led.port = &OCR0A;
 
@@ -73,9 +82,24 @@ void init()
     key_1.debounce_ms = 80;
     key_1.long_press_trigger_ms = 200;
 
-    cli();                                                          //#7
+    cli();                                                          // # 10
     timer2_init(16000000UL);
+    timer0_init();
     sei();
+}
+
+
+// Interrupt Service Routines
+ISR (TIMER2_COMPA_vect)
+/*
+* Update millis() value
+* Initiate analog conversion
+* Write cached ADC value to pwm_led 
+*/
+{
+	timer2_ms++;
+	ADCSRA |= (1 << ADSC);
+    analogWrite(&pwm_led, convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 255));
 }
 
 
@@ -86,6 +110,12 @@ ISR (USART_RX_vect)
 */
 {
     UART_INTERRUPT_TRIGGERED = 1;
+}
+
+
+ISR (ADC_vect)
+{
+    PWM_INTERRUPT_DUTY_CYCLE = ADC;
 }
 
 
