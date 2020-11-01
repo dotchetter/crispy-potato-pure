@@ -36,6 +36,7 @@ ENTITY key_1;
 
 // Volatile byte used for interrupts
 volatile uint8_t UART_INTERRUPT_TRIGGERED;
+volatile uint32_t PWM_INTERRUPT_DUTY_CYCLE;
 
 
 void init()
