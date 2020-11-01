@@ -32,7 +32,16 @@ const uint8_t debounceKey(ENTITY *key)
 * debounce time member.
 */
 {
-    return (millis() > (key->last_updated_ms + key->debounce_ms));
+    const uint32_t current_time = millis();
+
+    while ((current_time + key->debounce_ms) > millis())
+    {
+        if (!keyClicked(key))
+        {
+            return 0;            
+        }
+    }
+    return 1;
 }
 
 const uint8_t keyClicked(ENTITY *key)
