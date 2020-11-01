@@ -2,10 +2,11 @@ BIN = lab1# namn på output-binären
 
 # Lista på C-ﬁler ingående i binären
 SOURCES = \
-		  main.cpp \
-		  serial.c \
-		  timer.c  \
-		  led.c
+		  main.cpp   \
+		  serial.c   \
+		  timer.c    \
+		  led.c	     \
+		  helpers.c  \
 
 PORT = /dev/ttyACM0 # Arduinons serieport — kan vara ttyACM1, kolla dmesg!
 
@@ -15,7 +16,7 @@ OBJCOPY=avr-objcopy
 OBJDUMP=avr-objdump
 AVRSIZE=avr-size
 
-CFLAGS = -g -Wall -pedantic -O2 -DF_CPU=16000000UL -mmcu=atmega328p -c# Kompilatorﬂaggor
+CFLAGS = -g -Wall -pedantic -O2 -DF_CPU=16000000UL -mmcu=atmega328p -c # Kompilatorﬂaggor
 LDFLAGS = -mmcu=atmega328p# Länkarﬂaggor
 
 OBJS = $(SOURCES:.c=.o)
