@@ -26,6 +26,7 @@ const uint8_t parse_command()
     return 0;
 }
 
+
 const uint8_t debounceKey(ENTITY *key)
 /*
 * The entity is debounced with it's own 
@@ -43,6 +44,7 @@ const uint8_t debounceKey(ENTITY *key)
     }
     return 1;
 }
+
 
 const uint8_t keyClicked(ENTITY *key)
 /*
@@ -100,6 +102,7 @@ const uint8_t identifyLongPress(ENTITY *key)
     }
     return 1;
 }
+
 
 void analogWrite(ENTITY *entity, uint8_t val)
 /*

@@ -1,9 +1,5 @@
 #include "led.h"
 
-void LED_init() {
-	// ...
-}
-
 
 void toggle_led_on(ENTITY *led)
 {
