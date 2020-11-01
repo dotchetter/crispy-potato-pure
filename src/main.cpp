@@ -1,82 +1,81 @@
-#include "serial.h"
-#include "timer.h"
-#include "StateMachine.h"
-#include "commands.h"
-#include "entity.h"
-#include "led.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <string.h>
+#include "serial.h"
+#include "helpers.h"
+#include "timer.h"
+#include "StateMachine.h"
+#include "entity.h"
+#include "led.h"
+
 
 //Pin definitions using CrispyPotato Shield:
-#define LED_RED   3  // (PORTB BIT 3, pin 11)
-#define LED_GREEN 1  // (PORTB BIT 1, pin 9)
-#define LED_BLUE  2  // (PORTB BIT 2, pin 10)
 #define LED_PWM   6  // (PORTD BIT 6, pin 6)
-#define BUTTON_1  0  // (PORTB BIT 0, pin 8)
+#define KEY_1  2  // (PORTD BIT 2, pin 2)
 
-// Preferences
-#define LED_BLINK_INTERVAL_MS 1000
 
 // Compiler contract - methods defined below
-void armed_state();
-void disarmed_state();
 void idle_state();
+void active_state();
+void inactive_state();
 
 // -------------------------------------
 // --- Globally accessible instances --- 
 // -------------------------------------
 //
-// Statemachine used to bind function pointers to chars.
+// Statemachine used to bind function pointers to enum.
 // For info on this library, see: 
 // https://github.com/dotchetter/StateMachineEmbedded
 
-StateMachine<char> sm = StateMachine<char>(0, &idle_state);
+StateMachine<state> stateMachine = StateMachine<state>(IDLE, &idle_state);
 
-ENTITY_LED red_led;
-ENTITY_LED green_led;
-ENTITY_LED blue_led;
-ENTITY_LED pwm_led;
+
+// Instantiate entities such as LEDs and Buttons
+ENTITY pwm_led;
+ENTITY key_1;
+
 
 // Volatile byte used for interrupts
 volatile uint8_t UART_INTERRUPT_TRIGGERED;
 
+
 void init()
-{
-    // (0 TO LISTEN (INPUT), 1 TO WRITE (OUTPUT))
-    // Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
-    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3)); 
-    
-    // Enable pin 6 as output, which isn
-    DDRD |= _BV(PORTD6);
+/*
+* Initialize the runtime-environment on the MCU. Steps are as defined:
+*
+* # 0: Set DDRB to listen to all pins except bit 1, 2, 3. (0 0 0 0 1 1 1 0)
+* # 1: Enable pin 6 as output for PWM LED
+* # 2: Enable pin 2 as input for pushbutton
+* # 3: Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
+* # 4: Initialize UART. Used to receive commands
+* # 5: Add states to the statemachine
+* # 6: Configure entities
+* # 7: Temporarily disable interrupt routines and enable millis
+*/
+{   
+    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3));              //#0
+    DDRD |= _BV(PORTD6);                                            //#1
+    DDRD &= ~(_BV(PORTD2));                                         //#2
+    UCSR0B |= (1 << RXCIE0);                                        //#3
 
-    // Enable interrupt over USART receive (USART_RX, ATmega328p datasheet 12.1)
-    UCSR0B |= (1 << RXCIE0);
+    uart_init();                                                    //#4
 
-    // Initialize UART. Used to receive commands
-    uart_init();
-    
-    // Add states
-    sm.addState(1, &armed_state);
-    sm.addState(2, &disarmed_state);
+    stateMachine.addState(ACTIVE, &active_state);                   //#5
+    stateMachine.addState(INACTIVE, &inactive_state);
+    stateMachine.setStaticState(INACTIVE);
 
-    // Configure LED entities
-    red_led.registry_bit = LED_RED;
-    red_led.is_lit = 0;
+    pwm_led.registry_bit = LED_PWM;                                 //#6
+    pwm_led.is_active = 0;
+    pwm_led.port = &OCR0A;
 
-    green_led.registry_bit = LED_GREEN;
-    green_led.is_lit = 0;
+    key_1.registry_bit = KEY_1;
+    key_1.port = &PIND;
+    key_1.last_updated_ms = 0;
+    key_1.debounce_ms = 80;
+    key_1.long_press_trigger_ms = 200;
 
-    blue_led.registry_bit = LED_BLUE;
-    blue_led.is_lit = 0;
-
-    pwm_led.registry_bit = LED_PWM;
-    pwm_led.is_lit = 0;
-
-    // Temporarily disable interrupt routines and enable millis
-    cli();
-    timer2_init();
-    timer0_init();
+    cli();                                                          //#7
+    timer2_init(16000000UL);
+    sei();
 }
 
 const uint8_t parse_command()
