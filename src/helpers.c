@@ -58,6 +58,29 @@ const uint8_t keyClicked(ENTITY *key)
     return 0;
 }
 
+
+const uint8_t convert_range(uint32_t reference_value, 
+                             uint32_t reference_minimum, 
+                             uint32_t reference_maximum, 
+                             uint32_t out_minimum, 
+                             uint32_t out_maximum)
+/*
+* Returns reference range against an output
+* range in a number sequence.
+* 
+* If for example the range of reference is 0 - 433
+* and the scale is 0-25, the result of this function
+* is the representative value in the given output 
+* range of numbers.
+*/
+{
+    return (reference_value - reference_minimum) * 
+                  (out_maximum - out_minimum) / 
+                  (reference_maximum - reference_minimum) + 
+                  out_minimum;
+}
+
+
 const uint8_t identifyLongPress(ENTITY *key)
 /*
 * Serve as a way to identify if a key or
