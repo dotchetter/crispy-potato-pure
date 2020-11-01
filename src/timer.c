@@ -1,13 +1,5 @@
-#include <avr/io.h>
-#include <util/atomic.h>
-#include <avr/interrupt.h>
+#include "timer.h"
 
-volatile uint32_t timer2_ms;
-
-ISR (TIMER2_COMPA_vect)
-{
-	timer2_ms++;
-}
 
 void timer2_init(uint32_t cpu_clk)
 /*
