@@ -59,6 +59,7 @@ private:
 	State chainedStates[128];
 	State states[128];
 	State nextState;
+	State staticState;
 
 
 	const fp_t getMethodForState(State state)
@@ -105,6 +106,7 @@ public:
 	{
 		this->mainMethod = mainMethod;
 		this->mainState = state;
+		this->staticState = state;
 	}
 
 	const State getMainState()
@@ -239,5 +241,40 @@ public:
 				this->chainedStates[i] = secondary;
 			}
 		}
+	}
+
+	void setStaticState(State state)
+	/*
+	* Set a state that the StateMachine will remember.
+	* The static state can then be retrieved inside
+	* the main state, which can then call `transitionTo()`
+	* on this state. 
+	* This method is useful if a button push is supposed to
+	* keep the device in that state until something else triggers
+	* an abort. The StateMachine will still return to the 
+	* main state function when the static state call is 
+	* exhausted. The difference is that this state can be
+	* polled by the caller to serve as a temporary notepad
+	* of which state the device should remain in.
+	*
+	* This method will NOT modify the behavior of `next` 
+	* it will simply keep returning the next state in line.
+	*/
+	{
+		if (this->currentState == this->mainState)
+		{
+			this->staticState = state;
+		}
+	}
+
+	const State getStaticState()
+	/*
+	* Returns the configured static state set inside
+	* the main state function, if configured.
+	* The State Machine will repeatedly return this
+	* state unless it is mutated by the main state.
+	*/
+	{
+		return this->staticState;
 	}
 };
