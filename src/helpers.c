@@ -128,3 +128,13 @@ void digitalWrite(ENTITY *entity, uint8_t val)
         *entity->port = 0x00;
     }
 }
+
+
+void initAnalogDigitalConversion()
+/*
+* Initiates the analog conversion by
+* toggling the ADSC bit in ADCSRA
+*/
+{
+	ADCSRA |= _BV(ADSC);
+}
