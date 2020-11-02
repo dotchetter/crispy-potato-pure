@@ -15,8 +15,9 @@
 
 // Compiler contract - methods defined below
 void idle_state();
-void active_state();
-void inactive_state();
+void led_pulse_state();
+void led_potentiometer_state();
+void led_flashing_state();
 
 // -------------------------------------
 // --- Globally accessible instances --- 
@@ -69,9 +70,9 @@ void init()
 
     uart_init();                                                    // # 7
 
-    stateMachine.addState(ACTIVE, &active_state);                   // # 8
-    stateMachine.addState(INACTIVE, &inactive_state);
-    stateMachine.setStaticState(INACTIVE);
+    stateMachine.addState(PULSE_LED, &led_pulse_state);             // # 8
+    stateMachine.addState(POTENTIOMETER_LED, &led_potentiometer_state);
+    stateMachine.addState(FLASH_LED, &led_flashing_state);
 
     pwm_led.registry_bit = LED_PWM;                                 // # 9
     pwm_led.is_active = 0;
@@ -91,17 +92,6 @@ void init()
 
 
 // Interrupt Service Routines
-ISR (TIMER2_COMPA_vect)
-/*
-* Update millis() value
-* Initiate analog conversion
-* Write cached ADC value to pwm_led 
-*/
-{
-	timer2_ms++;
-	ADCSRA |= (1 << ADSC);
-    analogWrite(&pwm_led, convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 255));
-}
 
 
 ISR (USART_RX_vect)
@@ -123,37 +113,43 @@ ISR (ADC_vect)
 // --- State functions --- //
 void idle_state()
 {
-    static uint8_t uart_desired_state;
-    static unsigned long last_millis = 0;
-    state last_state = stateMachine.getStaticState();
+    // static uint8_t uart_desired_state;
+    // static unsigned long last_millis = 0;
+    // state last_state = stateMachine.getStaticState();
 
-    if (debounceKey(&key_1) && keyClicked(&key_1))
-    {
-        stateMachine.setStaticState(ACTIVE);
-    }
-    else
-    {
-        stateMachine.setStaticState(INACTIVE);
-    }
+    // if (debounceKey(&key_1) && keyClicked(&key_1))
+    // {
+    //     stateMachine.setStaticState(ACTIVE);
+    // }
+    // else
+    // {
+    //     stateMachine.setStaticState(INACTIVE);
+    // }
 
-    if (last_state != stateMachine.getStaticState())
-    {
-        stateMachine.transitionTo(stateMachine.getStaticState());
-    }
+    // if (last_state != stateMachine.getStaticState())
+    // {
+    //     stateMachine.transitionTo(stateMachine.getStaticState());
+    // }
 }
 
 
-void active_state()
+void led_pulse_state()
 {
-    uart_putstr("Button pressed");
-    stateMachine.release();
+    *pwm_led.port = simple_ramp();
 }
 
 
-void inactive_state()
+void led_potentiometer_state()
 {
-    uart_putstr("Button released");
-    stateMachine.release();
+    // check interrupt on timer2
+    // 	initAnalogDigitalConversion();
+    analogWrite(&pwm_led, convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 255));
+}
+
+
+void led_flashing_state()
+{
+
 }
 
 
@@ -163,7 +159,8 @@ int main()
     init();            
 
     while(1)
-    {  
-       stateMachine.next()();
+    {
+        led_pulse_state();
+        //stateMachine.next()();
     }
 }
