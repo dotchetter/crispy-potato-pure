@@ -14,8 +14,9 @@ typedef struct {
 typedef enum
 {
     IDLE,
-    ACTIVE,
-    INACTIVE
+    PULSE_LED,
+    POTENTIOMETER_LED,
+    FLASH_LED
 } state;
 
 #endif
