@@ -70,6 +70,31 @@ void timer0_init()
 }
 
 
+const uint8_t simple_ramp()
+/*
+* Returns value from 0-255, incrementing
+* with each call and automatically overflows
+* to 0.
+*/
+{
+	static uint8_t count;
+	static uint8_t direction;
+	
+	if (!timer2_ctc_match)
+		return count;
+	
+	if (count == 0)
+		direction = 1;
+	else if (count == 255)
+	    	direction = 0;
+	
+	timer2_ctc_match = 0;
+	direction ? count++ : count--;
+	
+	return count;
+}
+
+
 uint32_t millis()
 /*
 * Resembles the millis function in the Arduino universe.uint8_t
