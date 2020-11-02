@@ -1,9 +1,17 @@
 #include "timer.h"
 
 
-void timer2_init(uint32_t cpu_clk)
+ISR (TIMER2_COMPA_vect)
 /*
+* Update millis() value
 */
+{
+	timer2_ms++;
+	timer2_ctc_match = 1;
+}
+
+
+void timer2_init(uint32_t cpu_clk)
 {
 	// Toggle CTC mode for Timer2
 	TCCR2A |= _BV(WGM21);
