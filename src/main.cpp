@@ -20,6 +20,7 @@ void led_potentiometer_state();
 void led_flashing_state();
 void off_state();
 
+
 // -------------------------------------
 // --- Globally accessible instances --- 
 // -------------------------------------
@@ -143,8 +144,20 @@ void idle_state()
 
 
 void led_pulse_state()
+/*
+* Pulse the LED in fading fashion. The
+* LED fade speed is controlled with the
+* potentiometer knob on the device.
+*/
 {
-    analogWrite(&pwm_led, simple_ramp());
+    initAnalogDigitalConversion();
+    uint8_t potentiometer = convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 10);
+    
+    if (millis() - pwm_led.last_updated_ms > potentiometer)
+    {
+        analogWrite(&pwm_led, simple_ramp());
+        pwm_led.last_updated_ms = millis();
+    }
 }
 
 
@@ -174,10 +187,6 @@ int main()
 
     while(1)
     {
-        if (millis() - last_millis > 10)
-        {
-            led_pulse_state();
-            last_millis = millis();
-        }
+        led_pulse_state();
     }
 }
