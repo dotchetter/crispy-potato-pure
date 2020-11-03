@@ -16,7 +16,8 @@ typedef enum
     IDLE,
     PULSE_LED,
     POTENTIOMETER_LED,
-    FLASH_LED
+    FLASH_LED,
+    OFF
 } state;
 
 #endif
