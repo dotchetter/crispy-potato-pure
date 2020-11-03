@@ -210,7 +210,7 @@ void led_flashing_state()
 * Flash the LED with full brightness. The
 * LED flash speed is controlled with the
 * potentiometer knob on the device.
-* Range: 1,25 sec -> 0,25 sec per toggle
+* Range: ~1,2 sec -> ~0,2 sec per toggle
 */
 {
     initAnalogDigitalConversion();
