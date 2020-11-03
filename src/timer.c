@@ -72,9 +72,6 @@ void timer0_init()
 	// Set the prescaler (clock divisor) to 64 by toggling CS00 and CS01 in TCCR0B.
 	// This yields a frequency of 16*10^6 / (64 * 256) = 977 (rounded up) hz for the PWM LED.
 	TCCR0B |= (1 << CS01) | (1 << CS00); 
-
-	// Enable the compare match interupt for timer0
-	TIMSK0 |= (1 << OCIE0A);
 }
 
 
