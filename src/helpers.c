@@ -139,6 +139,7 @@ void initAnalogDigitalConversion()
 	ADCSRA |= _BV(ADSC);
 }
 
+
 void deactivate_entity(ENTITY* entity)
 /*
 * Clears the DDR bit of the entity in its
