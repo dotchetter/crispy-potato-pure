@@ -169,8 +169,20 @@ void led_potentiometer_state()
 
 
 void led_flashing_state()
+/*
+* Flash the LED with full brightness. The
+* LED flash speed is controlled with the
+* potentiometer knob on the device.
+*/
 {
+    initAnalogDigitalConversion();
 
+    if (millis() - pwm_led.last_updated_ms > PWM_INTERRUPT_DUTY_CYCLE)
+    {
+        digitalWrite(&pwm_led, pwm_led.is_active);
+        pwm_led.is_active = !pwm_led.is_active;
+        pwm_led.last_updated_ms = millis();
+    }
 }
 
 
