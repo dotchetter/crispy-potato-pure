@@ -78,6 +78,7 @@ private:
 		}return this->mainMethod;
 	}
 
+public:
 
 	const State getChainedStateForState(State state)
 		/*
@@ -98,8 +99,6 @@ private:
 		}
 		return this->mainState;
 	}
-
-public:
 
 
 	StateMachine(State state, fp_t mainMethod)
