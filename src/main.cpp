@@ -181,6 +181,11 @@ void led_pulse_state()
     initAnalogDigitalConversion();
     uint8_t potentiometer = convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 10);
     
+    // Presume the state chain ran one lap - the LED is turned off. Reactivate it.
+    reactivate_entity(&pwm_led);
+
+    initAnalogDigitalConversion();
+    
     if (millis() - pwm_led.last_updated_ms > potentiometer)
     {
         analogWrite(&pwm_led, simple_ramp());
