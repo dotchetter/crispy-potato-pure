@@ -85,15 +85,11 @@ const uint8_t simple_ramp()
 	static uint8_t count;
 	static uint8_t direction;
 	
-	if (!timer2_ctc_match)
-		return count;
-	
 	if (count == 0)
 		direction = 1;
 	else if (count == 255)
 	    	direction = 0;
 	
-	timer2_ctc_match = 0;
 	direction ? count++ : count--;
 	
 	return count;
