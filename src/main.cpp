@@ -144,7 +144,7 @@ void idle_state()
 
 void led_pulse_state()
 {
-    *pwm_led.port = simple_ramp();
+    analogWrite(&pwm_led, simple_ramp());
 }
 
 
