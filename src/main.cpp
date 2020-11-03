@@ -195,6 +195,11 @@ void led_pulse_state()
 
 
 void led_potentiometer_state()
+/*
+* This state allows the user to control
+* the brightness of the LED with the
+* potentiometer knob on the device.
+*/
 {
     initAnalogDigitalConversion();
     analogWrite(&pwm_led, convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 255));
@@ -206,11 +211,12 @@ void led_flashing_state()
 * Flash the LED with full brightness. The
 * LED flash speed is controlled with the
 * potentiometer knob on the device.
+* Range: 1,25 sec -> 0,25 sec per toggle
 */
 {
     initAnalogDigitalConversion();
 
-    if (millis() - pwm_led.last_updated_ms > PWM_INTERRUPT_DUTY_CYCLE)
+    if (millis() - pwm_led.last_updated_ms > (PWM_INTERRUPT_DUTY_CYCLE + 20))
     {
         digitalWrite(&pwm_led, pwm_led.is_active);
         pwm_led.is_active = !pwm_led.is_active;
@@ -220,6 +226,12 @@ void led_flashing_state()
 
 
 void off_state()
+/*
+* This state turns off the bit in the
+* data-direction register for the pwm_led
+* instance. For the led to light up again,
+* this bit must again be shifted to 1.
+*/
 {
     digitalWrite(&pwm_led, LOW);
 }
