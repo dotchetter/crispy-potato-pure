@@ -18,6 +18,8 @@ const uint8_t identifyLongPress(ENTITY *key);
 void analogWrite(ENTITY *entity, uint8_t val);
 void digitalWrite(ENTITY *entity, uint8_t val);
 void initAnalogDigitalConversion();
+void deactivate_entity(ENTITY* entity);
+void reactivate_entity(ENTITY* entity);
 const uint8_t convert_range(uint32_t reference_value, 
                              uint32_t reference_minimum, 
                              uint32_t reference_maximum, 

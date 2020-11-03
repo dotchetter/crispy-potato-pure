@@ -9,8 +9,8 @@
 
 
 //Pin definitions using CrispyPotato Shield:
-#define LED_PWM   6  // (PORTD BIT 6, pin 6)
-#define KEY_1  2  // (PORTD BIT 2, pin 2)
+#define LED_PWM_REG_BIT 6   // (PORTD BIT 6, pin 6)
+#define KEY_1_REG_BIT   2   // (PORTD BIT 2, pin 2)
 
 
 // Compiler contract - methods defined below
@@ -55,7 +55,7 @@ void init()
 * # 6: Disable Digital buffer on pin A0
 * # 7: Initialize UART. Used to receive commands
 * # 8: Add states to the statemachine and create state-chain.
-* # 9: Configure entities
+* # 9: Configure entities - sets values and port pointers to entities
 * # 10: Temporarily disable interrupt routines and enable millis
 */
 {   
@@ -82,10 +82,12 @@ void init()
     stateMachine.setChainedState(FLASH_LED, OFF);
 
     pwm_led.registry_bit = LED_PWM;                                 // # 9
+    pwm_led.registry_bit = PORTD6;                                      // # 9
     pwm_led.is_active = 0;
     pwm_led.port = &OCR0A;
+    pwm_led.data_direction_register = &DDRD;
 
-    key_1.registry_bit = KEY_1;
+    key_1.registry_bit = PORTD2;
     key_1.port = &PIND;
     key_1.last_updated_ms = 0;
     key_1.debounce_ms = 80;

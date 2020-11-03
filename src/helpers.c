@@ -138,3 +138,22 @@ void initAnalogDigitalConversion()
 {
 	ADCSRA |= _BV(ADSC);
 }
+
+void deactivate_entity(ENTITY* entity)
+/*
+* Clears the DDR bit of the entity in its
+* member registry_bit value
+*/
+{
+    *entity->data_direction_register &= ~(_BV(entity->registry_bit));
+}
+
+
+void reactivate_entity(ENTITY* entity)
+/*
+* Enables the DDR bit of the entity in its
+* member registry_bit value
+*/
+{
+    *entity->data_direction_register |= (_BV(entity->registry_bit));
+}

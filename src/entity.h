@@ -9,6 +9,7 @@ typedef struct {
     uint32_t long_press_trigger_ms;
     uint8_t is_active;
     volatile uint8_t *port;
+    volatile uint8_t *data_direction_register;
 }ENTITY;
 
 typedef enum
