@@ -142,7 +142,7 @@ void led_pulse_state()
 void led_potentiometer_state()
 {
     // check interrupt on timer2
-    // 	initAnalogDigitalConversion();
+    initAnalogDigitalConversion();
     analogWrite(&pwm_led, convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 255));
 }
 
@@ -157,10 +157,11 @@ int main()
 {
     uint32_t last_millis;
     init();            
+    
 
     while(1)
     {
-        led_pulse_state();
+        led_potentiometer_state();
         //stateMachine.next()();
     }
 }
