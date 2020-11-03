@@ -54,25 +54,25 @@ void init()
 * # 5: Enable ADC | set ADC prescaler to 8 | ADC Interrupt Enable | Left-adjust result
 * # 6: Disable Digital buffer on pin A0
 * # 7: Initialize UART. Used to receive commands
-* # 8: Add states to the statemachine and create state-chain.
+* # 8: Add states to the statemachine + create state-chain + Set the initial Static State to PULSE_LED
 * # 9: Configure entities - sets values and port pointers to entities
-* # 10: Temporarily disable interrupt routines and enable millis
+* # 10: Temporarily disable interrupt routines and enable timer0 for PWM and timer2 for millis
 */
 {   
-    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3));              // # 0
-    DDRD |= _BV(PORTD6);                                            // # 1
-    DDRD &= ~(_BV(PORTD2));                                         // # 2
-    UCSR0B |= (1 << RXCIE0);                                        // # 3
-    ADMUX |= _BV(REFS0);                                            // # 4
+    DDRB |= (_BV(PORTB1) | _BV(PORTB2) | _BV(PORTB3));                  // # 0
+    DDRD |= _BV(PORTD6);                                                // # 1
+    DDRD &= ~(_BV(PORTD2));                                             // # 2
+    UCSR0B |= (1 << RXCIE0);                                            // # 3
+    ADMUX |= _BV(REFS0);                                                // # 4
 
-    ADCSRA |= _BV(ADIE) | _BV(ADEN) | _BV(ADPS0)
-           | _BV(ADPS1) | _BV(ADLAR);                               // # 5
+    ADCSRA |= _BV(ADIE) | _BV(ADEN) | _BV(ADPS0)                        // # 5
+           | _BV(ADPS1) | _BV(ADLAR);
     
-    DIDR0 |= _BV(ADC0D);                                            // # 6
+    DIDR0 |= _BV(ADC0D);                                                // # 6
 
-    uart_init();                                                    // # 7
+    uart_init();                                                        // # 7
 
-    stateMachine.addState(PULSE_LED, &led_pulse_state);             // # 8
+    stateMachine.addState(PULSE_LED, &led_pulse_state);                 // # 8
     stateMachine.addState(POTENTIOMETER_LED, &led_potentiometer_state);
     stateMachine.addState(FLASH_LED, &led_flashing_state);
     stateMachine.addState(OFF, &off_state);
@@ -80,8 +80,10 @@ void init()
     stateMachine.setChainedState(PULSE_LED, POTENTIOMETER_LED);
     stateMachine.setChainedState(POTENTIOMETER_LED, FLASH_LED);
     stateMachine.setChainedState(FLASH_LED, OFF);
+    stateMachine.setChainedState(OFF, PULSE_LED);
 
-    pwm_led.registry_bit = LED_PWM;                                 // # 9
+    stateMachine.setStaticState(PULSE_LED);
+
     pwm_led.registry_bit = PORTD6;                                      // # 9
     pwm_led.is_active = 0;
     pwm_led.port = &OCR0A;
@@ -90,10 +92,10 @@ void init()
     key_1.registry_bit = PORTD2;
     key_1.port = &PIND;
     key_1.last_updated_ms = 0;
-    key_1.debounce_ms = 80;
+    key_1.debounce_ms = 50;
     key_1.long_press_trigger_ms = 200;
 
-    cli();                                                          // # 10
+    cli();                                                              // # 10
     timer2_init(16000000UL);
     timer0_init();
     sei();
@@ -101,8 +103,7 @@ void init()
 
 
 // Interrupt Service Routines
-
-
+ 
 ISR (USART_RX_vect)
 /*
 * interrupt service routine, triggered by received chars
@@ -121,27 +122,52 @@ ISR (ADC_vect)
 
 // --- State functions --- //
 void idle_state()
+/*
+* The idle state is the main state of this firmware.
+* The StateMachine instance will automatically resort
+* to this state when a transition to another state is
+* complete. This is to provide for a continuous ability
+* to read button keys or any other resource. 
+*
+* The Static State is stored in the StateMachine as 
+* a sticky-note to keep track of the state the machine
+* just entered. The idea is to only mutate this state
+* if the button is pushed and released, and then change
+* state to the next state in the chain of states when
+* the key was actually released. 
+* When the key remains untouched the call stack will
+* automatically return to this function per the design
+* described above- however, the previous state should
+* again be transitioned to as to keep the device doing
+* whatever it was told to do the last time the button
+* press-release-event occured.
+*/
 {
     static uint8_t uart_desired_state;
-    static unsigned long last_millis = 0;
-    state last_state = stateMachine.getStaticState();
+    static uint8_t key_clicked_and_released = 0;
+    state next_state = stateMachine.getStaticState();
 
-    // if (debounceKey(&key_1) && keyClicked(&key_1))
-    // {
-    //     stateMachine.setStaticState(ACTIVE);
-    // }
-    // else
-    // {
-    //     stateMachine.setStaticState(INACTIVE);
-    // }
+    if (debounceKey(&key_1) && keyClicked(&key_1))
+    {
+        key_1.is_active = 1;
+    }
+    
+    else
+    {
+        if (key_1.is_active)
+        {
+            key_clicked_and_released = 1;
+            key_1.is_active = 0;
+        }
+    }
 
-    // if (last_state != stateMachine.getStaticState())
-    // {
-    //     stateMachine.transitionTo(stateMachine.getStaticState());
-    // }
-
-    uart_putstr("in Idle");
-    stateMachine.transitionTo(OFF);
+    if (key_clicked_and_released)
+    {
+        next_state = stateMachine.getChainedStateForState(stateMachine.getStaticState());
+        stateMachine.setStaticState(next_state);
+        key_clicked_and_released = 0;
+    }
+    stateMachine.transitionTo(next_state);
 }
 
 
