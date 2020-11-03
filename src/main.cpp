@@ -18,6 +18,7 @@ void idle_state();
 void led_pulse_state();
 void led_potentiometer_state();
 void led_flashing_state();
+void off_state();
 
 // -------------------------------------
 // --- Globally accessible instances --- 
@@ -52,7 +53,7 @@ void init()
 * # 5: Enable ADC | set ADC prescaler to 8 | ADC Interrupt Enable | Left-adjust result
 * # 6: Disable Digital buffer on pin A0
 * # 7: Initialize UART. Used to receive commands
-* # 8: Add states to the statemachine
+* # 8: Add states to the statemachine and create state-chain.
 * # 9: Configure entities
 * # 10: Temporarily disable interrupt routines and enable millis
 */
@@ -73,6 +74,11 @@ void init()
     stateMachine.addState(PULSE_LED, &led_pulse_state);             // # 8
     stateMachine.addState(POTENTIOMETER_LED, &led_potentiometer_state);
     stateMachine.addState(FLASH_LED, &led_flashing_state);
+    stateMachine.addState(OFF, &off_state);
+
+    stateMachine.setChainedState(PULSE_LED, POTENTIOMETER_LED);
+    stateMachine.setChainedState(POTENTIOMETER_LED, FLASH_LED);
+    stateMachine.setChainedState(FLASH_LED, OFF);
 
     pwm_led.registry_bit = LED_PWM;                                 // # 9
     pwm_led.is_active = 0;
@@ -113,9 +119,9 @@ ISR (ADC_vect)
 // --- State functions --- //
 void idle_state()
 {
-    // static uint8_t uart_desired_state;
-    // static unsigned long last_millis = 0;
-    // state last_state = stateMachine.getStaticState();
+    static uint8_t uart_desired_state;
+    static unsigned long last_millis = 0;
+    state last_state = stateMachine.getStaticState();
 
     // if (debounceKey(&key_1) && keyClicked(&key_1))
     // {
@@ -130,6 +136,9 @@ void idle_state()
     // {
     //     stateMachine.transitionTo(stateMachine.getStaticState());
     // }
+
+    uart_putstr("in Idle");
+    stateMachine.transitionTo(OFF);
 }
 
 
@@ -141,7 +150,6 @@ void led_pulse_state()
 
 void led_potentiometer_state()
 {
-    // check interrupt on timer2
     initAnalogDigitalConversion();
     analogWrite(&pwm_led, convert_range(PWM_INTERRUPT_DUTY_CYCLE, 0, 1023, 0, 255));
 }
@@ -153,15 +161,23 @@ void led_flashing_state()
 }
 
 
+void off_state()
+{
+    digitalWrite(&pwm_led, LOW);
+}
+
+
 int main()
 {
     uint32_t last_millis;
     init();            
-    
 
     while(1)
     {
-        led_potentiometer_state();
-        //stateMachine.next()();
+        if (millis() - last_millis > 10)
+        {
+            led_pulse_state();
+            last_millis = millis();
+        }
     }
 }
