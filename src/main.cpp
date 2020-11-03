@@ -244,6 +244,6 @@ int main()
 
     while(1)
     {
-        led_pulse_state();
+        stateMachine.next()();
     }
 }
